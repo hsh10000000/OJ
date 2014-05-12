@@ -19,28 +19,31 @@ void union_set(int *f,int a,int b)//集合合并
 	}
 }
 
-bool check(int *f,bool *good,int nx,int ny)
-{
-	if(good[nx] &&good[ny]){
-		if(find_set(f,nx)==find_set(f,ny)){
-			return true;
-		}else{
-			return false;
-		}
+void check(int *f,int nx,int ny)
+{	
+	if(find_set(f,nx)==find_set(f,ny)){
+		cout<<"SUCCESS"<<endl;
 	}else{
-		return false;
+		cout<<"FAIL"<<endl;
 	}
-	
 }
 
 int main()
 {
 	int N,d;
 	cin>>N>>d;
-	int *corX=new int[N];
-	int *corY=new int[N];
-	bool *good=new bool[N];
-	int *f=new int[N];
+	int *corX=new int[N];//记录 X坐标值
+	int *corY=new int[N];//记录Y坐标值
+	bool *good=new bool[N];//记录电脑状态
+	int *f=new int[N];//记录父亲结点
+	bool **conn=new bool*[N];//记录链接状态
+	for(int i=0;i<N;++i){
+		conn[i]=new bool [N];
+		for(int j=0;j<N;++j){
+			conn[i][j]=false;
+		}
+		conn[i][i]=true;
+	}
 	for(int i=0;i<N;++i){
 		cin>>corX[i]>>corY[i];
 		good[i]=false;
@@ -52,26 +55,29 @@ int main()
 			int disY=corY[i]-corY[j];
 			int dis=disX*disX+disY*disY;
 			if(dis<=d*d){
-				union_set(f,i,j);
+				conn[i][j]=true;
+				conn[j][i]=true;
 			}
 		}
 	}
+
 	string str;
 
-	while (cin>>str)
-	{
+	while (cin>>str){
 		if(str=="O"){
 			int node;
 			cin>>node;
-			good[node]=true;
-		}else if(str=="S"){
+			good[node-1]=true;
+			for(int i=0;i<N;++i){
+				if(conn[i][node-1] && good[i]){
+					union_set(f,i,node-1);
+				}
+			}
+
+		}else{
 			int nx,ny;
 			cin>>nx>>ny;
-			if(check(f,good,nx-1,ny-1)){
-				cout<<"SUCCESS"<<endl;
-			}else{
-				cout<<"FAIL"<<endl;
-			}
+			check(f,nx-1,ny-1);
 		}
 	}
 
@@ -79,5 +85,9 @@ int main()
 	delete[]corY;
 	delete[]good;
 	delete[]f;
+	for(int i=0;i<N;++i){
+		delete[]conn[i];
+	}
+	delete[]conn;
 	return 0;
 }
